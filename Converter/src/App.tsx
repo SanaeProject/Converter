@@ -1,5 +1,6 @@
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import "./lib/bootstrap-5.3.8-dist/css/bootstrap.min.css";
+import "../css/style.css";
 
 const router = createHashRouter([
     {

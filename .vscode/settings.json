@@ -1,0 +1,10 @@
+{
+  "rust-analyzer.linkedProjects": [
+    "Converter/src-tauri/Cargo.toml"
+  ],
+  "rust-analyzer.files.exclude": [
+    "target",
+    "node_modules",
+    ".git"
+  ],
+}

@@ -1,11 +1,14 @@
 import { createHashRouter, RouterProvider } from "react-router-dom";
-import "./lib/bootstrap-5.3.8-dist/css/bootstrap.min.css";
-import "../css/style.css";
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.bundle.min.js";
+import "./css/style.css";
+import { Page } from "./components/Page";
+import { IndexPage } from "./pages/index";
 
 const router = createHashRouter([
     {
       path: "/",
-      element: <h1 className="text-center mt-5">Hello, World!</h1>,
+      element: <Page><IndexPage /></Page>,
     } 
   ]);
 function App() {

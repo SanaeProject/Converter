@@ -3,7 +3,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 import "./css/style.css";
 import { Page } from "./components/Page";
-import { IndexPage } from "./pages/Index";
+import { IndexPage } from "./pages";
 
 const router = createHashRouter([
     {

@@ -10,6 +10,13 @@ fn convert_file(name: &str, convert_to: &str, folder: &str) -> Result<String, St
         new_path = new_folder.join(new_path.file_name().ok_or("ファイル名を取得できません")?);
     }
 
+    if new_path.exists() {
+        let mut new_file_name = std::ffi::OsString::from(new_path.file_stem().ok_or("ファイル名を取得できません")?);
+        new_file_name.push("-copy");
+        new_file_name.push(new_path.extension().unwrap_or_default());
+        new_path.set_file_name(new_file_name);
+    }
+
     if convert_to == "gif"{
         let new_file = std::fs::File::create(&new_path).map_err(|e| e.to_string())?;
         let mut encoder = image::codecs::gif::GifEncoder::new(new_file);

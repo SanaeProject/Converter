@@ -49,20 +49,15 @@ export function IndexPage() {
             return;
         }
         const size = files.length;
-        let completed = 0;
 
-        const promises = files.map(async (file)=>{
-            await invoke('convert_file', { name: file, convertTo: type, folder})
-            .then(()=>{
-                setProgress(Math.floor(completed/size)*100);
-                completed++
-            })
-            .catch((err) => {
-                setMsg({success:false, msg:err});
+        files.forEach((file)=>{
+            invoke('convert_file', { name: file, convertTo: type, folder}).then(() => {
+                setProgress(progress + Math.floor(1/size)*100);
+            }).catch((err) => {
+                setMsg({success:true, msg:err});
                 setProgress(0);
             });
         });
-        await Promise.all(promises);
 
         msg === undefined && setMsg({success:true, msg:"成功しました"});
         setProgress(100);

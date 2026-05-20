@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, type MouseEvent } from "react";
 import { convertFileSrc, invoke } from "@tauri-apps/api/core";
 import { open } from "@tauri-apps/plugin-dialog";
 import { getCurrentWindow } from "@tauri-apps/api/window";
@@ -36,7 +36,7 @@ export function IndexPage() {
     };
 
     // 送信用ハンドラ
-    const submitHandler = async (e: React.MouseEvent<HTMLButtonElement>)=>{
+    const submitHandler = async (e: MouseEvent)=>{
         setProgress(0);
         setMsg(undefined);
         e.preventDefault();
@@ -72,7 +72,7 @@ export function IndexPage() {
     // ドラッグアンドドロップ
     useEffect(()=>{
         let unlisten: (() => void) | undefined;
-        let isMounted = false;
+        let isMounted = true;
 
         (async ()=>{
             const window = getCurrentWindow();
@@ -84,11 +84,11 @@ export function IndexPage() {
                 }
             });
 
-            if(!isMounted) unlisten();
+            if(!isMounted && unlisten) unlisten();
         })();
 
         return () => {
-            isMounted = true;
+            isMounted = false;
             if (unlisten) unlisten();
         };
     },[]);

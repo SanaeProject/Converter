@@ -1,5 +1,7 @@
 import { Header } from "./Header";
-export function Page({ children }: { readonly children: React.ReactNode }){
+import { type ReactNode } from "react";
+
+export function Page({ children }: { readonly children: ReactNode }){
     return (
         <>
             <Header></Header>

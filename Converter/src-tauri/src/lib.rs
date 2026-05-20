@@ -12,10 +12,11 @@ fn convert_file(name: &str, convert_to: &str, folder: &str) -> Result<String, St
 
     if new_path.exists() {
         let mut new_file_name = std::ffi::OsString::from(new_path.file_stem().map(|m| m.to_owned()).ok_or("ファイル名を取得できません")?);
+        let original_ext = new_path.extension().map(|e| e.to_owned());
         new_file_name.push("-copy");
         new_path.set_file_name(new_file_name);
 
-        if let Some(ext) = new_path.extension().map(|e| e.to_owned()){
+        if let Some(ext) = original_ext {
             new_path.set_extension(ext);
         }
     }

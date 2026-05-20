@@ -9,7 +9,7 @@ const router = createHashRouter([
     {
       path: "/",
       element: <Page><IndexPage /></Page>,
-    } 
+    }
   ]);
 function App() {
   return (

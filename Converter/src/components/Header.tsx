@@ -13,9 +13,6 @@ export function Header(){
                     <li className="nav-item">
                         <Link className="nav-link active" aria-current="page" to="/">Home</Link>
                     </li>
-                    <li className="nav-item">
-                        <Link className="nav-link" to="/documentation">説明書</Link>
-                    </li>
                 </ul>
                 </div>
             </div>

@@ -21,6 +21,7 @@ export function IndexPage() {
                 { name: 'すべてのファイル', extensions: ['*'] }
             ]
         });
+        Array.isArray(files)
         if (files) {
             setFiles(prevFiles => [...prevFiles, ...files]);
         }
@@ -129,7 +130,7 @@ export function IndexPage() {
 
             <div>
                 <div className="progress mb-2">
-                    <div className={`progress-bar progress-bar-striped ${progress!==100 && "progress-bar-animated"}`} style={{ width: `${progress}%` }}></div>
+                    <div className={`progress-bar progress-bar-striped ${progress === 100 ? "" : "progress-bar-animated"}`} style={{ width: `${progress}%` }}></div>
                 </div>
                 { msg &&
                     <div className={`alert ${msg.success ? "alert-info" : "alert-danger"}`}>
@@ -145,7 +146,7 @@ export function IndexPage() {
                         <div className="col-12 col-md-3 mb-3" key={idx}>
                             <div className="card">
                                 <div className="card-img-top d-flex justify-content-center p-1 bg-light">
-                                    <img style={{height:'100px', width:'fit-content', overflowX:'auto'}} src={convertFileSrc(file)} className=""/>
+                                    <img style={{height:'100px', width:'fit-content', overflowX:'auto'}} src={convertFileSrc(file)} alt="" className=""/>
                                 </div>
                                 <div className="card-body">
                                     <p className="card-text text-nowrap overflow-auto">

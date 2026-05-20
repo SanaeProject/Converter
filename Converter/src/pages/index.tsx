@@ -51,18 +51,22 @@ export function IndexPage() {
         }
 
         let completed = 0;
+        let isErrored = false;
         const promises = files.map(async (file)=>{
             await invoke('convert_file', { name: file, convertTo: type, folder}).then(() => {
                 completed++;
             }).catch((err) => {
+                isErrored = true;
                 setMsg({success: false, msg: err});
                 setProgress(0);
             });
         });
         await Promise.all(promises);
 
-        msg === undefined && setMsg({success:true, msg:"成功しました"});
-        setProgress(100);
+        if(!isErrored){
+            setMsg({success:true, msg:"成功しました"});
+            setProgress(100);
+        }
     };
 
     // ドラッグアンドドロップ

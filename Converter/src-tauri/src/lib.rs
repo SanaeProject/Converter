@@ -38,8 +38,9 @@ fn convert_file(name: &str, convert_to: &str, folder: &str) -> Result<String, St
 }
 #[tauri::command]
 fn fetch_args() -> Vec<String>{
+    let empty = Vec::new();
     ARGS.get()
-        .unwrap()
+        .unwrap_or(&empty)
         .iter()
         .map(|os_str| os_str.to_string_lossy().into_owned())
         .collect()

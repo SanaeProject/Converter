@@ -93,6 +93,13 @@ export function IndexPage() {
         };
     },[]);
 
+    // コマンドライン引数を受け取り
+    useEffect(()=>{
+        invoke<string[]>('fetch_args').then((args: string[])=>{
+            setFiles(prevFiles => [...prevFiles, ...args]);
+        });
+    }, []);
+
     return (
         <div className="container mt-5">
             <form>

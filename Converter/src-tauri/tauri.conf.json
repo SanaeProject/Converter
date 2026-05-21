@@ -20,9 +20,9 @@
     "security": {
       "assetProtocol": {
         "enable": true,
-        "scope": ["**"]
+        "scope": ["$HOME/Pictures/**"]
       },
-      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost;"
+      "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost http://asset.localhost;"
     }
   },
   "bundle": {

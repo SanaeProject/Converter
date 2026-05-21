@@ -20,7 +20,7 @@
     "security": {
       "assetProtocol": {
         "enable": true,
-        "scope": ["$HOME/Pictures/**"]
+        "scope": ["**"]
       },
       "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost http://asset.localhost;"
     }

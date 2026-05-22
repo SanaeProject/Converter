@@ -1,17 +1,46 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-#[tauri::command]
-fn convert_file(name: &str, convert_to: &str, folder: &str) -> Result<String, String> {
-    let img = image::open(name).map_err(|e| e.to_string())?;
-    let path = std::path::Path::new(name);
-    let mut new_path = path.with_extension(convert_to);
+use std::path::Path;
+use std::fs::File;
+use std::ffi::OsString;
 
+fn convert_by_img2svg_crate<P1: AsRef<Path>, P2: AsRef<Path>>(input: P1, output: P2) -> Result<(), String>{
+    let options = img2svg::ConversionOptions{
+        ..Default::default()
+    };
+    img2svg::convert(input.as_ref(), output.as_ref(), &options).map_err(|e| e.to_string())
+}
+fn convert_by_image_crate<P1: AsRef<Path>, P2: AsRef<Path>>(input: P1,output: P2) -> Result<(), String>{
+    let img = image::open(input).map_err(|e| e.to_string())?;
+    let ext = output.as_ref().extension().ok_or("拡張子の取得に失敗しました")?.to_string_lossy();
+    
+    if ext == "gif" {
+        let new_file = File::create(output).map_err(|e| e.to_string())?;
+
+        let mut encoder = image::codecs::gif::GifEncoder::new(new_file);
+        let rgb_img = img.to_rgba8();
+        let frame = image::Frame::new(rgb_img);
+
+        encoder.encode_frame(frame).map_err(|e| e.to_string())?;
+    }else{
+        img.save(output).map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
+}
+
+#[tauri::command]
+fn convert_file(input: &str, convert_to: &str, folder: &str) -> Result<(), String> {
+    let path = Path::new(input);
+    let mut new_path = path.with_extension(convert_to);
+    
+    // 保存先が指定されている場合
     if !folder.is_empty() {
-        let new_folder = std::path::Path::new(folder);
+        let new_folder = Path::new(folder);
         new_path = new_folder.join(new_path.file_name().ok_or("ファイル名を取得できません")?);
     }
 
+    // ファイル名が重複している場合
     if new_path.exists() {
-        let mut new_file_name = std::ffi::OsString::from(
+        let mut new_file_name = OsString::from(
             new_path.file_stem().ok_or("ファイル名の取得に失敗しました")?
         );
         let original_ext = new_path.extension().map(|e| e.to_owned());
@@ -23,19 +52,17 @@ fn convert_file(name: &str, convert_to: &str, folder: &str) -> Result<String, St
         }
     }
 
-    if convert_to == "gif" {
-        let new_file = std::fs::File::create(&new_path).map_err(|e| e.to_string())?;
-        let mut encoder = image::codecs::gif::GifEncoder::new(new_file);
-        let rgb_img = img.to_rgba8();
-        let frame = image::Frame::new(rgb_img);
-
-        encoder.encode_frame(frame).map_err(|e| e.to_string())?;
-    } else {
-        img.save(&new_path).map_err(|e| e.to_string())?;
+    // 画像保存
+    match convert_to {
+        "svg" => {
+            convert_by_img2svg_crate(input, &new_path)
+        },
+        _ => {
+            convert_by_image_crate(input, &new_path)
+        }
     }
-
-    Ok("完了".to_string())
 }
+
 #[tauri::command]
 fn fetch_args() -> Vec<String>{
     let empty = Vec::new();
@@ -44,6 +71,13 @@ fn fetch_args() -> Vec<String>{
         .iter()
         .map(|os_str| os_str.to_string_lossy().into_owned())
         .collect()
+}
+
+#[tauri::command]
+fn can_read(input: &str) -> bool {
+    image::ImageFormat::from_path(input)
+        .map(|f| f.can_read())
+        .unwrap_or(false)
 }
 
 static ARGS: std::sync::OnceLock<Vec<std::ffi::OsString>> = std::sync::OnceLock::new();
@@ -62,7 +96,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![convert_file, fetch_args])
+        .invoke_handler(tauri::generate_handler![convert_file, fetch_args, can_read])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

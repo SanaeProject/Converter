@@ -7,6 +7,8 @@ export function IndexPage() {
     const [ files, setFiles] = useState<string[]>([]);
     const [ folder, setFolder] = useState<string>('');
     const [ type, setType] = useState<string>('');
+    const [ inputTypes, setInputTypes] = useState<string[]>([]);
+    const [ outputTypes, setOutputTypes] = useState<string[]>([]);
     const [ progress, setProgress] = useState<number>(0);
     const [ msg, setMsg] = useState<{success:boolean, msg:string}>();
 
@@ -17,7 +19,7 @@ export function IndexPage() {
         const files = await open({
             multiple : true,
             filters : [
-                { name: '画像ファイル', extensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'ico', 'tiff', 'tif', 'tga'] },
+                { name: '画像ファイル', extensions: inputTypes },
                 { name: 'すべてのファイル', extensions: ['*'] }
             ]
         });
@@ -53,7 +55,7 @@ export function IndexPage() {
         let completed = 0;
         let isErrored = false;
         const promises = files.map(async (file)=>{
-            await invoke('convert_file', { name: file, convertTo: type, folder}).then(() => {
+            await invoke('convert_file', { input: file, convertTo: type, folder}).then(() => {
                 completed++;
             }).catch((err) => {
                 isErrored = true;
@@ -98,6 +100,12 @@ export function IndexPage() {
         invoke<string[]>('fetch_args').then((args: string[])=>{
             setFiles(prevFiles => [...prevFiles, ...args]);
         });
+        invoke<string[]>('fetch_can_read_exts').then((types: string[])=>{
+            setInputTypes(types);
+        });
+        invoke<string[]>('fetch_can_write_exts').then((types: string[])=>{
+            setOutputTypes(types);
+        });
     }, []);
 
     return (
@@ -111,14 +119,9 @@ export function IndexPage() {
                     <label htmlFor="outputFormat" className="form-label">変換後の形式</label>
                     <select id="outputFormat" className="form-select" onChange={e => setType(e.target.value)} value={type}>
                         <option value="">変換後の形式を選択</option>
-                        <option value="jpg">JPG/JPEG</option>
-                        <option value="png">PNG</option>
-                        <option value="gif">GIF</option>
-                        <option value="webp">WEBP</option>
-                        <option value="bmp">BMP</option>
-                        <option value="ico">ICO</option>
-                        <option value="tiff">TIFF/TIF</option>
-                        <option value="tga">TGA</option>
+                        {outputTypes.map((ext, idx) => (
+                            <option key={idx} value={ext}>{ext}</option>
+                        ))}
                     </select>
                 </div>
                 <div className="mb-3">

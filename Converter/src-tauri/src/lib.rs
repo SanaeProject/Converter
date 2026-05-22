@@ -27,6 +27,52 @@ fn convert_by_image_crate<P1: AsRef<Path>, P2: AsRef<Path>>(input: P1,output: P2
     Ok(())
 }
 
+fn is_svg<P: AsRef<Path>>(file: P)->bool{
+    file.as_ref()
+        .extension()
+        .map(|f| f.eq_ignore_ascii_case("svg"))
+        .unwrap_or(false)
+}
+fn can_read<P: AsRef<Path>>(input: P) -> bool {
+    if is_svg(&input){
+        return true;
+    }
+
+    image::ImageFormat::from_path(input.as_ref())
+        .map(|f| f.can_read())
+        .unwrap_or(false)
+}
+fn can_convert<P: AsRef<Path>>(output: P) -> bool {
+    if is_svg(&output){
+        return true;
+    }
+
+    image::ImageFormat::from_path(output.as_ref())
+        .map(|f| f.can_write())
+        .unwrap_or(false)
+}
+
+#[tauri::command]
+fn fetch_can_read_exts()->Vec<String>{
+    image::ImageFormat::all()
+        .filter(|f| f.can_read())
+        .flat_map(|f| f.extensions_str())
+        .copied()
+        .map(|f| f.to_string())
+        .chain(std::iter::once("svg".to_string()))
+        .collect::<Vec<String>>()
+}
+#[tauri::command]
+fn fetch_can_write_exts()->Vec<String>{
+    image::ImageFormat::all()
+        .filter(|f| f.can_write())
+        .flat_map(|f| f.extensions_str())
+        .copied()
+        .map(|f| f.to_string())
+        .chain(std::iter::once("svg".to_string()))
+        .collect::<Vec<String>>()
+}
+
 #[tauri::command]
 fn convert_file(input: &str, convert_to: &str, folder: &str) -> Result<(), String> {
     let path = Path::new(input);
@@ -52,6 +98,11 @@ fn convert_file(input: &str, convert_to: &str, folder: &str) -> Result<(), Strin
         }
     }
 
+    // 対応非対応確認
+    if !can_read(input) || !can_convert(&new_path){
+        return Err("対応していない拡張子です。".to_string());
+    } 
+
     // 画像保存
     match convert_to {
         "svg" => {
@@ -73,13 +124,6 @@ fn fetch_args() -> Vec<String>{
         .collect()
 }
 
-#[tauri::command]
-fn can_read(input: &str) -> bool {
-    image::ImageFormat::from_path(input)
-        .map(|f| f.can_read())
-        .unwrap_or(false)
-}
-
 static ARGS: std::sync::OnceLock<Vec<std::ffi::OsString>> = std::sync::OnceLock::new();
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -96,7 +140,7 @@ pub fn run() {
         )
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![convert_file, fetch_args, can_read])
+        .invoke_handler(tauri::generate_handler![convert_file, fetch_args, fetch_can_read_exts, fetch_can_write_exts])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

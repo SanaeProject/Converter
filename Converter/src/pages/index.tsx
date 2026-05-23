@@ -40,6 +40,8 @@ export function IndexPage() {
 
     // 送信用ハンドラ
     const submitHandler = async (e: MouseEvent)=>{
+        if(isConverting) return;
+        
         setProgress(0);
         setMsg(undefined);
         e.preventDefault();
@@ -138,7 +140,7 @@ export function IndexPage() {
                     </div>
                 </div>
                 <div className="mb-3">
-                    <button type="button" className={`btn btn-primary form-control ${isConverting ? "disabled" : ""}`} onClick={(e) => {
+                    <button type="button" className={`btn btn-primary form-control ${isConverting ? "disabled" : ""}`} disabled={isConverting} onClick={(e) => {
                         submitHandler(e);
                     }}>
                         変換

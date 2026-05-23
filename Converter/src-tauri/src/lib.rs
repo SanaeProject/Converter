@@ -56,12 +56,12 @@ fn convert_by_image_crate<P1: AsRef<Path>, P2: AsRef<Path>>(input: P1,output: P2
  * @returns 変換可能な拡張子の場合はtrue、そうでない場合はfalse
  */
 fn can_read<P: AsRef<Path>>(input: P) -> bool {
-    fetch_can_read_exts().iter().any(|ext| {
-        input.as_ref()
-            .extension()
-            .map(|f| f.eq_ignore_ascii_case(ext))
-            .unwrap_or(false)
-    })
+    let input_ext = match input.as_ref().extension().and_then(|ex| ex.to_str()){
+        Some(ex) => ex,
+        None => { return false }
+    };
+
+    fetch_can_read_exts().iter().any(|ext| ext.eq_ignore_ascii_case(input_ext))
 }
 
 /**
@@ -70,12 +70,11 @@ fn can_read<P: AsRef<Path>>(input: P) -> bool {
  * @returns 変換可能な拡張子のベクター
  */
 fn can_convert<P: AsRef<Path>>(output: P) -> bool {
-    fetch_can_write_exts().iter().any(|ext|
-        output.as_ref()
-            .extension()
-            .map(|f| f.eq_ignore_ascii_case(ext))
-            .unwrap_or(false)    
-    )
+    let output_ext = match output.as_ref().extension().and_then(|ex| ex.to_str()){
+        Some(ex) => ex,
+        None => { return false }
+    };
+    fetch_can_write_exts().iter().any(|ext| ext.eq_ignore_ascii_case(output_ext))
 }
 
 /**

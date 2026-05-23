@@ -2,56 +2,86 @@ use std::path::Path;
 use std::fs::File;
 use std::ffi::OsString;
 
+/**
+ * img2svgクレートを使用して画像を変換する
+ * @args input: 変換元のファイルパス
+ * @args output: 変換後のファイルパス
+ * @returns 成功した場合はOk、失敗した場合はErrにエラーメッセージを格納して返す
+ */
 fn convert_by_img2svg_crate<P1: AsRef<Path>, P2: AsRef<Path>>(input: P1, output: P2) -> Result<(), String>{
-    let options = img2svg::ConversionOptions{
+    let img = img2svg::load_image(input.as_ref()).map_err(|e| e.to_string())?;
+    let enhanced_options = img2svg::EnhancedOptions{
+        corner_threshold: 45.0,
+        num_colors: 12,
         ..Default::default()
     };
-    img2svg::convert(input.as_ref(), output.as_ref(), &options).map_err(|e| e.to_string())
+
+    let svg_layers = img2svg::vectorize_enhanced(&img, &enhanced_options).map_err(|e| e.to_string())?;
+    img2svg::write_enhanced_svg(&svg_layers, output.as_ref()).map_err(|e| e.to_string())?;
+
+    Ok(())
 }
+
+/**
+ * imageクレートを使用して画像を変換する
+ * @args input: 変換元のファイルパス
+ * @args output: 変換後のファイルパス
+ * @returns 成功した場合はOk、失敗した場合はErrにエラーメッセージを格納して返す
+ */
 fn convert_by_image_crate<P1: AsRef<Path>, P2: AsRef<Path>>(input: P1,output: P2) -> Result<(), String>{
-    let img = image::open(input).map_err(|e| e.to_string())?;
+    let img = image::open(input.as_ref()).map_err(|e| e.to_string())?;
     let ext = output.as_ref().extension().ok_or("拡張子の取得に失敗しました")?.to_string_lossy();
     
     if ext == "gif" {
-        let new_file = File::create(output).map_err(|e| e.to_string())?;
+        let new_file = File::create(output.as_ref()).map_err(|e| e.to_string())?;
 
         let mut encoder = image::codecs::gif::GifEncoder::new(new_file);
         let rgb_img = img.to_rgba8();
         let frame = image::Frame::new(rgb_img);
 
-        encoder.encode_frame(frame).map_err(|e| e.to_string())?;
+        encoder.encode_frame(frame).map_err(|e| {
+            std::fs::remove_file(output.as_ref()).ok();
+            e.to_string()
+        })?;
     }else{
-        img.save(output).map_err(|e| e.to_string())?;
+        img.save(output.as_ref()).map_err(|e| e.to_string())?;
     }
 
     Ok(())
 }
 
-fn is_svg<P: AsRef<Path>>(file: P)->bool{
-    file.as_ref()
-        .extension()
-        .map(|f| f.eq_ignore_ascii_case("svg"))
-        .unwrap_or(false)
-}
+/**
+ * 変換可能な拡張子かどうかを確認する
+ * @args input: 変換元のファイルパス
+ * @returns 変換可能な拡張子の場合はtrue、そうでない場合はfalse
+ */
 fn can_read<P: AsRef<Path>>(input: P) -> bool {
-    if is_svg(&input){
-        return true;
-    }
-
-    image::ImageFormat::from_path(input.as_ref())
-        .map(|f| f.can_read())
-        .unwrap_or(false)
+    fetch_can_read_exts().iter().any(|ext| {
+        input.as_ref()
+            .extension()
+            .map(|f| f.eq_ignore_ascii_case(ext))
+            .unwrap_or(false)
+    })
 }
+
+/**
+ * 変換可能な拡張子を取得する
+ * @args output: 変換後のファイルパス
+ * @returns 変換可能な拡張子のベクター
+ */
 fn can_convert<P: AsRef<Path>>(output: P) -> bool {
-    if is_svg(&output){
-        return true;
-    }
-
-    image::ImageFormat::from_path(output.as_ref())
-        .map(|f| f.can_write())
-        .unwrap_or(false)
+    fetch_can_write_exts().iter().any(|ext|
+        output.as_ref()
+            .extension()
+            .map(|f| f.eq_ignore_ascii_case(ext))
+            .unwrap_or(false)    
+    )
 }
 
+/**
+ * 読み込み可能な拡張子を取得する
+ * @returns 読み込み可能な拡張子のベクター
+ */
 #[tauri::command]
 fn fetch_can_read_exts()->Vec<String>{
     image::ImageFormat::all()
@@ -59,9 +89,13 @@ fn fetch_can_read_exts()->Vec<String>{
         .flat_map(|f| f.extensions_str())
         .copied()
         .map(|f| f.to_string())
-        .chain(std::iter::once("svg".to_string()))
         .collect::<Vec<String>>()
 }
+
+/**
+ * 書き込み可能な拡張子を取得する
+ * @returns 書き込み可能な拡張子のベクター
+ */
 #[tauri::command]
 fn fetch_can_write_exts()->Vec<String>{
     image::ImageFormat::all()
@@ -73,8 +107,15 @@ fn fetch_can_write_exts()->Vec<String>{
         .collect::<Vec<String>>()
 }
 
+/**
+ * 画像変換コマンド
+ * @args input: 変換元のファイルパス
+ * @args convert_to: 変換後の拡張子
+ * @args folder: 保存先フォルダー（空文字の場合は元のフォルダーに保存）
+ * @returns 成功した場合はOk、失敗した場合はErrにエラーメッセージを格納して返す
+ */
 #[tauri::command]
-fn convert_file(input: &str, convert_to: &str, folder: &str) -> Result<(), String> {
+async fn convert_file(input: &str, convert_to: &str, folder: &str) -> Result<(), String> {
     let path = Path::new(input);
     let mut new_path = path.with_extension(convert_to);
     
@@ -104,16 +145,28 @@ fn convert_file(input: &str, convert_to: &str, folder: &str) -> Result<(), Strin
     } 
 
     // 画像保存
-    match convert_to {
-        "svg" => {
-            convert_by_img2svg_crate(input, &new_path)
-        },
-        _ => {
-            convert_by_image_crate(input, &new_path)
+    let input_str = input.to_string();
+    let convert_to_str = convert_to.to_string();
+    let dest_path = new_path.clone();
+
+    tauri::async_runtime::spawn_blocking(move || {
+        match convert_to_str.as_str() {
+            "svg" => {
+                convert_by_img2svg_crate(input_str, &dest_path)
+            },
+            _ => {
+                convert_by_image_crate(input_str, &dest_path)
+            }
         }
-    }
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
+/**
+ * コマンド引数を取得する
+ * @returns コマンド引数のベクター、引数がない場合は空のベクターを返す
+ */
 #[tauri::command]
 fn fetch_args() -> Vec<String>{
     let empty = Vec::new();

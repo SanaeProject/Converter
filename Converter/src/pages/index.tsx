@@ -11,6 +11,7 @@ export function IndexPage() {
     const [ outputTypes, setOutputTypes] = useState<string[]>([]);
     const [ progress, setProgress] = useState<number>(0);
     const [ msg, setMsg] = useState<{success:boolean, msg:string}>();
+    const [ isConverting, setIsConverting] = useState<boolean>(false);
 
     // ファイル読み取りハンドラ
     const fileSelectHandler = async ()=>{
@@ -52,6 +53,8 @@ export function IndexPage() {
             return;
         }
 
+        setIsConverting(true);
+
         let completed = 0;
         let isErrored = false;
         const promises = files.map(async (file)=>{
@@ -69,6 +72,7 @@ export function IndexPage() {
             setMsg({success:true, msg:"成功しました"});
             setProgress(100);
         }
+        setIsConverting(false);
     };
 
     // ドラッグアンドドロップ
@@ -134,7 +138,7 @@ export function IndexPage() {
                     </div>
                 </div>
                 <div className="mb-3">
-                    <button type="button" className="btn btn-primary form-control" onClick={(e) => {
+                    <button type="button" className={`btn btn-primary form-control ${isConverting ? "disabled" : ""}`} onClick={(e) => {
                         submitHandler(e);
                     }}>
                         変換

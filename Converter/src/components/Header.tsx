@@ -11,7 +11,7 @@ export function Header(){
                 <div className="collapse navbar-collapse" id="navbarNav">
                 <ul className="navbar-nav">
                     <li className="nav-item">
-                        <Link className="nav-link active" aria-current="page" to="/">ホーム</Link>
+                        <Link className="nav-link active" to="/">ホーム</Link>
                     </li>
                     <li className="nav-item">
                         <Link className="nav-link" to="/detail">詳細</Link>

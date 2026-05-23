@@ -48,9 +48,9 @@ export function DetailPage() {
                     <h5 className="card-title">ライセンス</h5>
                     <p className="card-text">
                         ConverterはMITライセンスの下で公開されています。<br />
-                        詳細はGitHubのリポジトリをご確認ください。
+                        詳細はLICENSEをご確認ください。
                     </p>
-                    <a href="https://github.com/SanaeProject/Converter/blob/main/LICENSE" className="btn btn-primary" target="_blank" rel="noopener noreferrer">GitHubリポジトリ</a>
+                    <a href="https://github.com/SanaeProject/Converter/blob/main/LICENSE" className="btn btn-primary" target="_blank" rel="noopener noreferrer">LICENSE</a>
                 </div>
             </div>
         </div>

@@ -32,7 +32,7 @@ fn convert_by_image_crate<P1: AsRef<Path>, P2: AsRef<Path>>(input: P1,output: P2
     let img = image::open(input.as_ref()).map_err(|e| e.to_string())?;
     let ext = output.as_ref().extension().ok_or("拡張子の取得に失敗しました")?.to_string_lossy();
     
-    if ext == "gif" {
+    if ext.eq_ignore_ascii_case("gif") {
         let new_file = File::create(output.as_ref()).map_err(|e| e.to_string())?;
 
         let mut encoder = image::codecs::gif::GifEncoder::new(new_file);

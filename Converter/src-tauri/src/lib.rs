@@ -125,7 +125,7 @@ async fn convert_file(input: &str, convert_to: &str, folder: &str) -> Result<(),
     }
 
     // ファイル名が重複している場合
-    if new_path.exists() {
+    while new_path.exists() {
         let mut new_file_name = OsString::from(
             new_path.file_stem().ok_or("ファイル名の取得に失敗しました")?
         );

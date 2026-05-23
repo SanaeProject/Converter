@@ -29,7 +29,7 @@ export function DetailPage() {
                         <ul>
                             <li>Tauri: 2</li>
                             <li>image: 0.25.10</li>
-                            <li>img2svg: 0.1.0</li>
+                            <li>img2svg: 0.1.6</li>
                         </ul>
                     </p>
                     <Link to="/" className="btn btn-primary">ホームに戻る</Link>

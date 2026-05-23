@@ -17,21 +17,19 @@ export function DetailPage() {
             <div className="card mt-3">
                 <div className="card-body">
                     <h5 className="card-title">使用ライブラリ</h5>
-                    <p className="card-text">
-                        Converterは以下のライブラリを使用しています。
-                        <h6>フロントエンド</h6>
-                        <ul>
-                            <li>React: 19.1.0</li>
-                            <li>Bootstrap: 5.3.8</li>
-                        </ul>
+                    Converterは以下のライブラリを使用しています。
+                    <h6>フロントエンド</h6>
+                    <ul>
+                        <li>React: 19.1.0</li>
+                        <li>Bootstrap: 5.3.8</li>
+                    </ul>
 
-                        <h6>バックエンド</h6>
-                        <ul>
-                            <li>Tauri: 2</li>
-                            <li>image: 0.25.10</li>
-                            <li>img2svg: 0.1.0</li>
-                        </ul>
-                    </p>
+                    <h6>バックエンド</h6>
+                    <ul>
+                        <li>Tauri: 2</li>
+                        <li>image: 0.25.10</li>
+                        <li>img2svg: 0.1.6</li>
+                    </ul>
                     <Link to="/" className="btn btn-primary">ホームに戻る</Link>
                 </div>
             </div>

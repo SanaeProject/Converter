@@ -65,7 +65,7 @@ fn can_read<P: AsRef<Path>>(input: P) -> bool {
 }
 
 /**
- * 変換可能な拡張子を取得する
+ * 変換可能かどうかを返す
  * @args output: 変換後のファイルパス
  * @returns 変換可能な拡張子のベクター
  */

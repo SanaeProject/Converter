@@ -1,16 +1,9 @@
 version: 2
 updates:
   - package-ecosystem: "cargo"
-    directory: "/"
+    directory: "/Converter/src-tauri"
     schedule:
       interval: "weekly"
       day: "thursday"
       time: "09:00"
       timezone: "Asia/Tokyo"
-      
-  # Rustツールチェーンの更新
-  - package-ecosystem: "rust-toolchain"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "thursday"
